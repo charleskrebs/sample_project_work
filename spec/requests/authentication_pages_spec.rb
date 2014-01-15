@@ -42,6 +42,8 @@ describe "Authentication" do
       describe 'followed by signout' do
         before { click_link 'Sign out' }
         it { should have_link('Sign In') }
+        it { should_not have_link('Profile') }
+        it { should_not have_link('Settings') }
       end
     end
   end
