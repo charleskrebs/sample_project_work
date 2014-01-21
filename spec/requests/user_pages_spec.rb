@@ -51,7 +51,7 @@ describe 'User Pages' do
 
   describe 'signup page' do
     before { visit signup_path }
-    it { should have_content('Sign up')}
+    it { should have_content('Sign up') }
     it { should have_title(full_title('Sign Up')) }
   end
 
@@ -70,6 +70,57 @@ describe 'User Pages' do
       it { should have_content(m2.content) }
       it { should have_content(user.microposts.count) }
     end
+
+    describe 'follow/unfollow buttons' do
+      let(:other_user) { FactoryGirl.create(:user) }
+      before { sign_in user }
+
+      describe 'following a user' do
+        before { visit user_path(other_user) }
+
+        it 'should increment the followed user count' do
+          expect do
+            click_button 'Follow'
+          end.to change(user.followed_users, :count).by(1)
+        end
+
+        it "should increment the other user's followers count" do
+          expect do
+            click_button 'Follow'
+          end.to change(other_user.followers, :count).by(1)
+        end
+
+        describe 'toggling the button' do
+          before { click_button 'Follow' }
+          it { should have_xpath("//input[@value='Unfollow']") }
+        end
+      end
+
+      describe 'unfollowing a user' do
+        before do
+          user.follow!(other_user)
+          visit user_path(other_user)
+        end
+
+        it 'should decrement the followed user count' do
+          expect do
+            click_button 'Unfollow'
+          end.to change(user.followed_users, :count).by(-1)
+        end
+
+        it "should decrement the other user's followers count" do
+          expect do
+            click_button 'Unfollow'
+          end.to change(other_user.followers, :count).by(-1)
+        end
+
+        describe 'toggling the button' do
+          before { click_button 'Unfollow' }
+          it { should have_xpath("//input[@value='Follow']") }
+        end
+      end
+
+    end
   end
 
   describe 'signup page' do
@@ -86,8 +137,8 @@ describe 'User Pages' do
 
     describe 'with valid information' do
       before do
-        fill_in 'Name',     with: 'Charles Krebs'
-        fill_in 'Email',    with: 'a@b.com'
+        fill_in 'Name', with: 'Charles Krebs'
+        fill_in 'Email', with: 'a@b.com'
         fill_in 'Password', with: 'foobar'
         fill_in 'Confirm Password', with: 'foobar'
       end
@@ -128,9 +179,9 @@ describe 'User Pages' do
       let(:new_name) { 'New Name' }
       let(:new_email) { 'new@example.com' }
       before do
-        fill_in 'Name',         with: new_name
-        fill_in 'Email',        with: new_email
-        fill_in 'Password',     with: user.password
+        fill_in 'Name', with: new_name
+        fill_in 'Email', with: new_email
+        fill_in 'Password', with: user.password
         fill_in 'Confirm Password', with: user.password
         click_button 'Save changes'
       end
@@ -144,8 +195,8 @@ describe 'User Pages' do
 
     describe 'forbidden attributes' do
       let(:params) do
-        { user: { admin: true, password: user.password,
-                  password_confirmation: user.password } }
+        {user: {admin: true, password: user.password,
+                password_confirmation: user.password}}
       end
       before do
         sign_in user, no_capybara: true
